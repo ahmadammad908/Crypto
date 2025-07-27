@@ -1,0 +1,11 @@
+[[headers]]
+  for = "/Beast_Web.webm"  # Specific file path
+  [headers.values]
+    "Content-Type" = "video/webm"
+    "Cache-Control" = "public, max-age=604800"  # Caching for 1 week
+
+# OR for all WebM files:
+[[headers]]
+  for = "/*.webm"  # All .webm files
+  [headers.values]
+    "Content-Type" = "video/webm"
